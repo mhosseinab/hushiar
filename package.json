@@ -1,0 +1,41 @@
+{
+  "name": "home_security",
+  "version": "1.0.0",
+  "description": "home Security system",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "home_security"
+  ],
+  "author": "MHAB",
+  "license": "ISC",
+  "dependencies": {
+    "@influxdata/influxdb-client": "^1.9.0",
+    "child_process": "^1.0.2",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "fast-folder-size": "^1.4.0",
+    "ffmpeg": "0.0.4",
+    "ffmpeg-stream": "^0.7.0",
+    "gulp": "^4.0.2",
+    "gulp-nodemon": "^2.5.0",
+    "jimp": "^0.16.1",
+    "kavenegar": "^1.1.4",
+    "mongoose": "^5.10.5",
+    "mqtt": "^4.2.6",
+    "multer": "^1.4.2",
+    "node-fetch": "^2.6.1",
+    "node-schedule": "^2.0.0",
+    "opencv-build": "^0.1.9",
+    "opencv-motion-detector": "^0.0.5",
+    "opencv4nodejs": "^5.6.0",
+    "path": "^0.12.7",
+    "redis": "^3.1.2",
+    "socket.io": "^2.3.0",
+    "uuid": "^8.3.2",
+    "videoshow": "^0.1.12",
+    "web-push": "^3.4.4"
+  }
+}
