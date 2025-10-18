@@ -178,3 +178,15 @@ Note: Each folder should contain a README with scope and interfaces (recommended
 ## License
 
 Proprietary — temporary public demo for evaluation. Contact maintainers for usage terms.
+
+Folder Docs
+- [admin](admin/README.md) — Admin/management APIs
+- [app](app/README.md) — Bootstrap/config/shared modules
+- [device](device/README.md) — Device domain and validation
+- [live](live/README.md) — WebSocket ingress and live channels
+- [manager](manager/README.md) — Orchestration and scheduled tasks
+- [model](model/README.md) — Schemas/models
+- [provider](provider/README.md) — Pluggable providers
+- [service](service/README.md) — Core business logic (events, alerts, video)
+- [storage](storage/README.md) — Frames/artifact storage
+- [subscriber](subscriber/README.md) — RabbitMQ consumers
