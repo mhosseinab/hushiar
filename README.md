@@ -175,15 +175,6 @@ Note: Each folder should contain a README with scope and interfaces (recommended
 - Pluggable message brokers (NATS, Pulsar) via provider interface
 - Edge buffering and offline sync
 
-## ADRs (Architecture Decision Records)
-
-- ADR-0001: RabbitMQ over NATS/Pulsar for MVP (reasons: routing flexibility, DLQs, team ops familiarity)
-- ADR-0002: InfluxDB for motion telemetry TS; MongoDB for metadata
-- ADR-0003: WebSockets for live device channel; push notifications for end-user alerting
-- ADR-0004: Frames persisted to object storage; assemble-on-demand to optimize cost
-
-Place ADRs in docs/adr/ and cross-link from this README.
-
 ## License
 
 Proprietary — temporary public demo for evaluation. Contact maintainers for usage terms.
