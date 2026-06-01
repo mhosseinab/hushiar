@@ -25,7 +25,7 @@ Twenty-one manager classes encapsulating all business logic. Apps import manager
 | `DeviceManager` | `managers/device/` | `DeviceModel` | Device CRUD, token rotation, AES-256-CBC password encryption/decryption, alarm and monitoring state |
 | `LocationManager` | `managers/location/` | `LocationModel` | Per-user named location CRUD |
 | `SensorManager` | `managers/sensor/` | `SensorModel` | Sensor CRUD, attach/detach to devices |
-| `ActuatorManager` | `managers/actuator/` | `ActuatorModel` | Actuator CRUD, attach/detach to devices |
+| `ActuatorManager` | `managers/actuator/` | `ActuatorModel` | Actuator CRUD, add-and-attach/assign to devices |
 | `ImageManager` | `managers/image/` | `ImageModel, storagePath?` | Disk I/O for JPEG frames, DB record management, in-memory last-image cache |
 | `ArchiveManager` | `managers/archive/` | `ArchiveModel, videoPath?` | Archive lifecycle: open → fill → close with video reference |
 | `LogManager` | `managers/log/` | `LogModel, InfluxProvider` | Ingest domain events to MongoDB + InfluxDB time-series |
@@ -35,7 +35,7 @@ Twenty-one manager classes encapsulating all business logic. Apps import manager
 | `SocketManager` | `managers/socket/` | *(none)* | Socket.io connection registry — one socket per user, emit by userId |
 | `MqttManager` | `managers/mqtt/` | `MqttProvider` | MQTT dispatch: register/uploadImage/moving/action callbacks; publish setToken/setStatus/setResolution; subscribeDeviceTopic for per-device MQTT topics |
 | `StorageManager` | `managers/storage/` | `UserModel, imagePath?, videoPath?` | Disk usage scanning via `fast-folder-size`, incremental `$inc` updates |
-| `VideoManager` | `managers/video/` | `videoPath?` | `videoshow` wrapper — assembles JPEG list into MP4 |
+| `VideoManager` | `managers/video/` | `storagePath?` | `videoshow` wrapper — assembles JPEG list into MP4 |
 | `DeviceTypeManager` | `managers/device-type/` | `DeviceTypeModel` | Device type catalog read-only access |
 | `SubscriberManager` | `managers/subscriber/` | `SubscriberModel` | SMS subscriber CRUD per device |
 | `VerboseManager` | `managers/verbose/` | `VerboseModel` | Debug log ingestion |
@@ -62,6 +62,7 @@ graph TD
         AU_M["AuthModel"]
         DT_M["DeviceTypeModel"]
         SB_M["SubscriberModel"]
+        VM_M["VerboseModel"]
     end
 
     subgraph Providers["@hushiar/providers"]
@@ -92,6 +93,8 @@ graph TD
         SubMgr["SubscriberManager"]
         MotMgr["MotionDetectorManager"]
         MemMgr["MemStorageManager"]
+        VMgr["VerboseManager"]
+        IMgr["InfluxManager"]
     end
 
     UM_M --> UserMgr
@@ -123,6 +126,9 @@ graph TD
 
     DT_M --> DTMgr
     SB_M --> SubMgr
+
+    VM_M["VerboseModel"] --> VMgr["VerboseManager"]
+    IP   --> IMgr["InfluxManager"]
 ```
 
 `NotifyManager` receives `UserManager` as `IUserSmsUpdater` (a single-method interface) to avoid a circular dependency.
@@ -148,7 +154,7 @@ flowchart TD
 
     FS["Filesystem\n(JPEG frames)"]
 
-    MDM -- "addNewImage(imagePath)" --> FIFO["In-memory FIFO\n(max 10 frames)"]
+    MDM -- "addNewImage(image)" --> FIFO["In-memory FIFO\n(max 10 frames)"]
     FIFO -- "compareImages(path1, path2)" --> MDM
     MDM -- "Worker({ imagePath1, imagePath2, minimumArea })" --> WorkerThread
     WorkerThread -- "imread(path1), imread(path2)" --> FS
@@ -240,7 +246,7 @@ async registerDeviceToken(manufactureId: string): Promise<{ token: string; mqttB
 
 ### Utilities as imports, not constructor args
 
-Node.js builtins (`fs/promises`, `crypto`, `worker_threads`) and third-party utilities (`uuid`, `Jimp`, `videoshow`, `fast-folder-size`) are imported directly inside each manager. They are not injected through constructors. This keeps constructors clean and makes the dependency graph explicit at the class level.
+Node.js builtins (`fs/promises`, `crypto`, `worker_threads`) and third-party utilities (`uuid`, `videoshow`, `fast-folder-size`) are imported directly inside each manager. They are not injected through constructors. This keeps constructors clean and makes the dependency graph explicit at the class level.
 
 ### `IUserSmsUpdater` — thin interface for NotifyManager
 
