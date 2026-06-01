@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+set -e
+
+echo "Running biome lint..."
+pnpm run lint
+
+echo "Running typecheck..."
+pnpm run typecheck
