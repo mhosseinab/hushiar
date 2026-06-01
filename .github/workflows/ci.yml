@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+# Cancel in-progress runs on the same branch when a new push arrives.
+# Safe for CI (not a deploy workflow), so cancel-in-progress is fine.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Default deny — each job opts in to what it actually needs.
+permissions: {}
+
+jobs:
+  ci:
+    name: Typecheck, Lint, Test, Build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read  # checkout only
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'  # keys off pnpm-lock.yaml automatically
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Test
+        run: pnpm run test
+        env:
+          MQTT_PASSWORD_ENCRYPTION_KEY: test-key-32-chars-padded-0000000
+          HUSHIAR_MQTT_HOST: mqtt.hushiar.com
+          CAMERA_IMAGE_STORAGE_PATH: /tmp/test-images
+          CAMERA_VIDEO_STORAGE_PATH: /tmp/test-video
+          MONITORING_DURATION_SECOND: '5'
+
+      - name: Build
+        run: pnpm run build
