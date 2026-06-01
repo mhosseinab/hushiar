@@ -1,0 +1,33 @@
+{
+  "name": "@hushiar/providers",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check ./src",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@hushiar/shared-types": "workspace:*",
+    "@influxdata/influxdb-client": "^1.35.0",
+    "mqtt": "^5.10.0",
+    "redis": "^4.7.0",
+    "web-push": "^3.6.7",
+    "kavenegar": "^1.1.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/web-push": "^3.6.3",
+    "typescript": "^5.7.0"
+  }
+}
