@@ -65,6 +65,8 @@ erDiagram
         Date lastSMSDateTime
         Date lastWPDateTime
         array wpSubList
+        boolean isValid
+        boolean isMobileNumberConfirmed
         Date registerDate
     }
 
@@ -103,6 +105,7 @@ erDiagram
         boolean isActive
         string status
         string manufactureId
+        Date registerDate
     }
 
     ACTUATOR {
@@ -112,6 +115,7 @@ erDiagram
         boolean isActive
         string status
         string manufactureId
+        Date registerDate
     }
 
     IMAGE {
@@ -119,6 +123,7 @@ erDiagram
         string fileName
         ObjectId device
         ObjectId actuator
+        Mixed file
         Date registerDate
     }
 
@@ -159,7 +164,7 @@ erDiagram
 
     AUTH {
         ObjectId _id
-        string authToken
+        number authToken
         ObjectId user
         ObjectId subscriber
         Date createDate
@@ -261,7 +266,7 @@ Array of `ObjectId` references to `images`. The image documents are **not** dele
 import mongoose from 'mongoose';
 
 export async function connect(): Promise<void> {
-  await mongoose.connect(process.env['MONGO_URI'] ?? 'mongodb://localhost:27017/hushiar');
+  await mongoose.connect(process.env.MONGO_URI ?? 'mongodb://localhost:27017/hushiar');
 }
 
 export async function disconnect(): Promise<void> {

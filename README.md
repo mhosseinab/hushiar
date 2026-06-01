@@ -136,6 +136,9 @@ hushiar/
 │   ├── live-api/          :4005   — Socket.io relay for distributed deployments
 │   └── subscriber-api/    :4002   — stub (never deployed to production)
 │
+├── tooling/
+│   └── typescript/           shared tsconfig base configs
+│
 ├── .github/workflows/ci.yml      — typecheck → lint → test → build
 ├── .githooks/pre-commit           — biome lint + turbo typecheck
 ├── turbo.json
@@ -220,11 +223,10 @@ Copy `.env.example` and fill in all values before starting any service.
 | `HUSHIAR_MQTT_PORT` | Yes | MQTT broker port (default 1773) |
 | `HUSHIAR_MQTT_USERNAME` | Yes | MQTT broker username |
 | `HUSHIAR_MQTT_PASSWORD` | Yes | MQTT broker password |
-| `MQTT_PASSWORD_ENCRYPTION_KEY` | Yes | 32-char AES-256 key for device credential encryption |
+| `MQTT_PASSWORD_ENCRYPTION_KEY` | No | 32-char AES-256 key for device credential encryption |
 | `CAMERA_IMAGE_STORAGE_PATH` | No | Absolute path for JPEG storage (default `./storage/images`) |
 | `CAMERA_VIDEO_STORAGE_PATH` | No | Absolute path for video storage (default `./storage/video`) |
 | `ARCHIVE_VIDEO_DURATION_MIN` | No | Archive interval in minutes (default `1`) |
-| `MONITORING_DURATION_SECOND` | No | Motion detection window in seconds (default `5`) |
 
 ---
 

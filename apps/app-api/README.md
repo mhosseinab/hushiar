@@ -30,7 +30,13 @@ Main user-facing service running on **port 4001**. Provides the full REST API co
 
 ## HTTP Routes
 
-All routes except `GET /isAlive` require the `token` header (a MongoDB ObjectId string matching an `Auth` document).
+Most routes require the `token` header (a MongoDB ObjectId string matching an `Auth` document). Exceptions that do **not** require auth:
+
+- `POST /user/signup`
+- `POST /user/signinWithMobileNumber`
+- `POST /user/checkCodeWithMobileNumber`
+- `GET /actuator/getStream`
+- `GET /isAlive`
 
 ### Auth (no token required)
 
@@ -85,7 +91,7 @@ All routes except `GET /isAlive` require the `token` header (a MongoDB ObjectId 
 |--------|------|---------|-------------|
 | `POST` | `/image/getAll_device` | `deviceid` | All images for a device |
 | `GET` | `/image/get` | `deviceid`, `imageid` | Single image with base64 content |
-| `POST` | `/image/delete` | — | Delete image (DB + disk) |
+| `POST` | `/image/delete` | `deviceid` | Delete image (DB + disk) |
 
 ### Archive
 
@@ -94,7 +100,7 @@ All routes except `GET /isAlive` require the `token` header (a MongoDB ObjectId 
 | `GET` | `/archive/getAll_device` | `deviceid` | All archives for a device |
 | `GET` | `/archive/getAll_user` | — | All archives across all user devices |
 | `GET` | `/archive/getOne` | `archiveid` | Single archive detail |
-| `POST` | `/archive/delete` | — | Delete archive (DB + video file + images) |
+| `POST` | `/archive/delete` | `deviceid` | Delete archive (DB + video file + images) |
 | `GET` | `/video/:token/:archiveId` | — | Stream archive video file (URL params) |
 | `GET` | `/video/getAll_device` | `deviceid` | All video archives for a device (with thumbnails) |
 
@@ -164,7 +170,7 @@ sequenceDiagram
     alt Valid OTP
         APP-->>CLIENT: { auth: auth._id } ← MongoDB ObjectId used as session token
     else Invalid / expired
-        APP-->>CLIENT: 400 { message: "Invalid code" }
+        APP-->>CLIENT: 400 { message: "کد تایید صحیح نمیباشد." }
     end
 
     Note over CLIENT,APP: All subsequent requests
@@ -201,7 +207,6 @@ io.on('connection', (socket) => {
 | Event | Payload | When |
 |-------|---------|------|
 | `newLog` | `{ deviceId, log }` | After image archive or video generation |
-| `deviceStatus` | `{ deviceId, status }` | When device status changes |
 
 ---
 
@@ -269,17 +274,17 @@ graph TD
         LM["LocationManager\n(LocationModel)"]
         SM["SensorManager\n(SensorModel)"]
         AM["ActuatorManager\n(ActuatorModel)"]
-        IM["ImageManager\n(ImageModel)"]
-        AR["ArchiveManager\n(ArchiveModel)"]
+        IM["ImageManager\n(ImageModel, imageStoragePath)"]
+        AR["ArchiveManager\n(ArchiveModel, videoStoragePath)"]
         LG["LogManager\n(LogModel, InfluxProvider)"]
         AU["AuthManager\n(AuthModel)"]
         NM["NotifyManager\n(SmsProvider, UserManager as IUserSmsUpdater)"]
         SK["SocketManager"]
         MQ["MqttManager\n(MqttProvider)"]
-        ST["StorageManager\n(UserModel)"]
+        ST["StorageManager\n(UserModel, imagePath, videoPath)"]
         DT["DeviceTypeManager\n(DeviceTypeModel)"]
         SB["SubscriberManager\n(SubscriberModel)"]
-        VI["VideoManager"]
+        VI["VideoManager\n(videoStoragePath)"]
         CM["CommandManager\n(CommandModel)"]
     end
 

@@ -41,7 +41,7 @@ Twenty-one manager classes encapsulating all business logic. Apps import manager
 | `VerboseManager` | `managers/verbose/` | `VerboseModel` | Debug log ingestion |
 | `InfluxManager` | `managers/influx/` | `InfluxProvider` | Thin delegate for direct InfluxDB writes |
 | `MemStorageManager` | `managers/mem-storage/` | `RedisProvider` | Redis-backed last-image-per-device cache (separate from ImageManager's in-process cache) |
-| `MotionDetectorManager` | `managers/motion-detector/` | *(none)* | OpenCV motion detection in a worker thread; bounded image FIFO |
+| `MotionDetectorManager` | `managers/motion-detector/` | `storagePath?, monitoringDurationSecond?` | OpenCV motion detection in a worker thread; bounded image FIFO |
 
 ---
 

@@ -16,6 +16,7 @@ Device-facing HTTP + MQTT bridge running on **port 4003**. Every physical camera
 - [HTTP Routes](#http-routes)
 - [Device Auth Middleware](#device-auth-middleware)
 - [Container Dependencies](#container-dependencies)
+- [Deployment & Graceful Shutdown](#deployment--graceful-shutdown)
 - [Environment Variables](#environment-variables)
 
 ---
@@ -45,6 +46,8 @@ The MQTT bridge is set up in `src/container.ts` via callbacks registered on `Mqt
 | `HSHYR_<token>/pub/Capture` | `"1"` \| `"0"` | Log actuator action |
 | `HSHYR_<token>/pub/Buzzer` | `"1"` \| `"0"` | Log actuator action |
 | `HSHYR_<token>/pub/Beacon` | `"1"` \| `"0"` | Log actuator action |
+
+> **Note:** Only Register, Image, and Moving have registered MQTT callbacks in `src/container.ts`. Detector, Capture, Buzzer, and Beacon topics are defined in the MqttManager's topic map but no callbacks are wired — the device publishes on them but this service does not currently process those messages.
 
 ### Topics published by this service
 
@@ -172,6 +175,9 @@ sequenceDiagram
 | `GET` | `/sensor/detach` | Detach a sensor (`?sensorManufactureId=`) from the device |
 | `GET` | `/actuator/attached` | Attach an actuator (`?actuatorManufactureId=`) to the device |
 | `POST` | `/upload/image` | HTTP image upload (multer, max 10 MB, JPEG/PNG/WebP) |
+| `POST` | `/device/onAlarm` | Set device on-alarm state (body: `{ isOnAlarm }`) |
+| `GET` | `/device/getAllCommand` | Poll for pending commands |
+| `POST` | `/device/commandExecuteResult` | Confirm command execution (body: `{ commandId, isDone }`) |
 | `POST` | `/device/ingestLog` | Ingest a device log entry (body: `{ data }`) |
 | `POST` | `/device/ingetLog` | Firmware typo alias for `/device/ingestLog` (backward compat) |
 
@@ -210,12 +216,15 @@ graph TD
     IMG_MGR["ImageManager\n(ImageModel)"]
     LOG_MGR["LogManager\n(LogModel + InfluxProvider)"]
     MQTT_MGR["MqttManager\n(MqttProvider)"]
+    CMD_MGR["CommandManager\n(CommandModel)"]
 
     ENV --> MQTT_PROV
     ENV --> INFLUX_PROV
 
     INFLUX_PROV --> LOG_MGR
     MQTT_PROV --> MQTT_MGR
+
+    CMD_MGR --> DEV_MGR
 
     MQTT_MGR --> DEV_MGR
     MQTT_MGR --> SENS_MGR
@@ -224,12 +233,36 @@ graph TD
     MQTT_MGR --> LOG_MGR
 ```
 
+`CommandManager` is used by the protected device routes (`GET /device/getAllCommand`, `POST /device/commandExecuteResult`) to poll and confirm queued actuator commands. It is not involved in any MQTT callback.
+
 `src/app.ts` contains the Express app factory (`createApp`) — it wires middleware (JSON parser, CORS, device auth) and mounts all route factories onto the app.
 
 MQTT callbacks registered in `src/container.ts`:
 - `setRegisterDeviceCallback` — runs the full token registration sequence
 - `setUploadImageCallback` — stores image to disk and DB
 - `setMovingCallback` — logs motion events when not in home mode
+
+---
+
+## Deployment & Graceful Shutdown
+
+`src/index.ts` registers a `SIGTERM` handler for clean container shutdown:
+
+```typescript
+process.on('SIGTERM', async () => {
+  await container.mqttProvider.disconnect().catch(console.error);
+  await mongoose.disconnect();
+  process.exit(0);
+});
+```
+
+On `SIGTERM` (sent by Docker, Kubernetes, or PM2 on stop/redeploy):
+
+1. **MqttProvider.disconnect()** — gracefully closes the MQTT broker connection (in-flight messages complete before disconnect).
+2. **mongoose.disconnect()** — closes all MongoDB connection pools.
+3. **process.exit(0)** — exits cleanly.
+
+> There is no `SIGINT` handler — during development the process simply terminates, which is fine because MQTT and MongoDB connections are cleaned up by their own driver-level shutdown hooks.
 
 ---
 

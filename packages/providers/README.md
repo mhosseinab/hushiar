@@ -102,7 +102,7 @@ class InfluxProvider {
 
 `writeBoolean` and `writeString` are convenience methods that construct a `Point` with a `deviceId` tag and a string field, then delegate to `writePoint()`. The `Point` class is re-exported from `@influxdata/influxdb-client` for consumers that need to build custom points.
 
-Each write opens a write API, writes the point, and closes the API (flushing immediately). Individual write errors are logged but do not throw.
+Each write opens a write API, writes the point, and closes the API (flushing immediately). Write errors propagate normally to the caller.
 
 **Used by:** `LogManager` for time-series telemetry (motion events, image captures, video archives, token requests).
 
@@ -127,7 +127,7 @@ class MqttProvider {
   async subscribeToTopicList(topics: string[]): Promise<void>
   async unsubscribeFromTopic(topic: string): Promise<void>
   setMessageCallback(fn: (topic: string, message: Buffer) => void): void
-  publish(topic: string, payload: string): void
+  publish(topic: string, message: string): void
   async disconnect(): Promise<void>
 }
 ```
