@@ -1,0 +1,41 @@
+{
+  "name": "@hushiar/core",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check ./src",
+    "test": "vitest run",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@hushiar/db-schema": "workspace:*",
+    "@hushiar/providers": "workspace:*",
+    "@hushiar/shared-types": "workspace:*",
+    "fast-folder-size": "^1.4.0",
+    "jimp": "^1.6.0",
+    "socket.io": "^4.8.0",
+    "uuid": "^11.0.0",
+    "videoshow": "^0.1.12",
+    "ffmpeg-stream": "^1.0.1"
+  },
+  "optionalDependencies": {
+    "opencv4nodejs": "^5.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
