@@ -1,0 +1,9 @@
+packages:
+  - 'packages/*'
+  - 'apps/*'
+allowBuilds:
+  '@biomejs/biome': true
+  esbuild: true
+  fast-folder-size: true
+  opencv-build: true
+  opencv4nodejs: true
