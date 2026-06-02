@@ -1,4 +1,5 @@
-import 'dotenv/config';
+import { loadRootEnv } from '@hushiar/providers';
+loadRootEnv();
 import http from 'node:http';
 import type { AuthenticatedSocket } from '@hushiar/core';
 import { connect } from '@hushiar/db-schema';

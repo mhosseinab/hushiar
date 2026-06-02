@@ -50,3 +50,8 @@ Thumbs.db
 *.wmv
 
 .ftpconfig
+
+# Environment secrets
+.env
+.env.local
+.env.*.local

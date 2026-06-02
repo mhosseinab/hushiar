@@ -1,4 +1,5 @@
-import 'dotenv/config';
+import { loadRootEnv } from '@hushiar/providers';
+loadRootEnv();
 import { connect } from '@hushiar/db-schema';
 import cors from 'cors';
 import express from 'express';

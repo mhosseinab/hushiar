@@ -20,10 +20,11 @@
   "dependencies": {
     "@hushiar/shared-types": "workspace:*",
     "@influxdata/influxdb-client": "^1.35.0",
+    "dotenv": "^16.6.1",
+    "kavenegar": "^1.1.4",
     "mqtt": "^5.10.0",
     "redis": "^4.7.0",
-    "web-push": "^3.6.7",
-    "kavenegar": "^1.1.4"
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
