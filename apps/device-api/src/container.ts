@@ -23,10 +23,10 @@ const envSchema = z.object({
   HUSHIAR_MQTT_PORT: z.coerce.number().int().positive(),
   HUSHIAR_MQTT_USERNAME: z.string().min(1),
   HUSHIAR_MQTT_PASSWORD: z.string().min(1),
-  INFLUX_URL: z.string().url(),
-  INFLUX_TOKEN: z.string().min(1),
-  INFLUX_ORG: z.string().min(1),
-  INFLUX_BUCKET: z.string().min(1),
+  INFLUX_URL: z.string().default(''),
+  INFLUX_TOKEN: z.string().default(''),
+  INFLUX_ORG: z.string().default(''),
+  INFLUX_BUCKET: z.string().default(''),
 });
 
 export type Container = ReturnType<typeof createContainer>;

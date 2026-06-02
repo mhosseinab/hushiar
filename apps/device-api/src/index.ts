@@ -1,4 +1,5 @@
-import 'dotenv/config';
+import { loadRootEnv } from '@hushiar/providers';
+loadRootEnv();
 import { connect } from '@hushiar/db-schema';
 import mongoose from 'mongoose';
 import { createApp } from './app.js';
