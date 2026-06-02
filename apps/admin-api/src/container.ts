@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import {
   ActuatorManager,
   ArchiveManager,
@@ -17,8 +16,10 @@ import {
   SensorModel,
   UserModel,
 } from '@hushiar/db-schema';
-import { InfluxProvider, WebPushProvider } from '@hushiar/providers';
+import { InfluxProvider, WebPushProvider, loadRootEnv } from '@hushiar/providers';
 import { z } from 'zod';
+
+loadRootEnv();
 
 const env = z
   .object({
