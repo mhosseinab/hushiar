@@ -14,6 +14,7 @@ Hushiar is a pnpm monorepo containing five backend services for a self-hosted Io
 - [Environment Variables](#environment-variables)
 - [Getting Started](#getting-started)
 - [Development Commands](#development-commands)
+- [Deployment](#deployment)
 - [CI / CD](#ci--cd)
 
 ---
@@ -277,6 +278,135 @@ Turbo caches build artifacts in `.turbo/` and only rebuilds packages affected by
 
 ```bash
 pnpm run build -- --force
+```
+
+---
+
+## Deployment
+
+### 1. Build for production
+
+```bash
+pnpm install --frozen-lockfile
+pnpm run build
+```
+
+Each app compiles to `apps/<name>/dist/`. The packages under `packages/` compile to their own `dist/` and are consumed by the apps at runtime via the pnpm workspace symlinks.
+
+### 2. Environment
+
+Create `/etc/hushiar/.env` (or equivalent) and populate every required variable from `.env.example`. Keep the file readable only by the service user:
+
+```bash
+chmod 600 /etc/hushiar/.env
+```
+
+Env vars are loaded at startup by `loadRootEnv()` in `@hushiar/providers`, which walks up the directory tree from the package location to find `.env`. In containerised or managed deployments (systemd, Docker, cloud run) you can skip the file entirely and inject variables directly into the process environment.
+
+### 3. Process management with PM2
+
+Install PM2 globally once on the server:
+
+```bash
+npm install -g pm2
+```
+
+Create `ecosystem.config.cjs` at the repo root:
+
+```js
+const env = { NODE_ENV: 'production', NODE_OPTIONS: '--enable-source-maps' };
+
+module.exports = {
+  apps: [
+    { name: 'app-api',        script: 'node', args: 'dist/index.js', cwd: 'apps/app-api',        env },
+    { name: 'device-api',     script: 'node', args: 'dist/index.js', cwd: 'apps/device-api',     env },
+    { name: 'admin-api',      script: 'node', args: 'dist/index.js', cwd: 'apps/admin-api',      env },
+    { name: 'live-api',       script: 'node', args: 'dist/index.js', cwd: 'apps/live-api',       env },
+    { name: 'subscriber-api', script: 'node', args: 'dist/index.js', cwd: 'apps/subscriber-api', env },
+  ],
+};
+```
+
+Start, reload, and monitor:
+
+```bash
+pm2 start ecosystem.config.cjs   # first run
+pm2 reload all                    # zero-downtime reload after a deploy
+pm2 save && pm2 startup           # persist across reboots
+pm2 logs                          # tail all logs
+pm2 monit                         # live resource usage
+```
+
+### 4. Nginx reverse proxy
+
+A minimal Nginx config that terminates TLS and proxies to each service:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name api.hushiar.com;
+
+    ssl_certificate     /etc/ssl/hushiar/fullchain.pem;
+    ssl_certificate_key /etc/ssl/hushiar/privkey.pem;
+
+    # Main user API + Socket.io
+    location / {
+        proxy_pass         http://127.0.0.1:4001;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade $http_upgrade;
+        proxy_set_header   Connection "upgrade";
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name device.hushiar.com;
+
+    # ...TLS config...
+
+    location / {
+        proxy_pass         http://127.0.0.1:4003;
+        client_max_body_size 15M;   # image uploads
+        proxy_http_version 1.1;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+    }
+}
+```
+
+### 5. Deploy script
+
+A repeatable deploy from a clean git pull:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+git pull --ff-only
+pnpm install --frozen-lockfile
+pnpm run build
+
+pm2 reload ecosystem.config.cjs --update-env
+pm2 save
+```
+
+Save as `scripts/deploy.sh`, `chmod +x` it, and run from the repo root.
+
+### 6. Storage directories
+
+Image and video storage paths default to `./storage/images` and `./storage/video` relative to the working directory. For production, point them at a dedicated volume and ensure the service user owns the directory:
+
+```bash
+mkdir -p /var/hushiar/images /var/hushiar/video
+chown -R hushiar:hushiar /var/hushiar
+```
+
+Then set in `.env`:
+```
+CAMERA_IMAGE_STORAGE_PATH=/var/hushiar/images
+CAMERA_VIDEO_STORAGE_PATH=/var/hushiar/video
 ```
 
 ---
